@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic Tac Toe</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+
+    <script
+      src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
+      type="module"
+    ></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+      }
+      .mainCard {
+        font-family: "Arial", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        flex-direction: column;
+      }
+      .spline-viewer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        z-index: 0;
+      }
+      .card {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        justify-items: center;
+        align-items: center;
+        align-content: center;
+      }
+      .mainCard {
+        height: 650px;
+        width: 500px;
+        z-index: 20;
+        background-color: rgba(255, 255, 255, 0.3);
+        position: absolute;
+        border-radius: 20px;
+        filter: drop-shadow(10px);
+        box-shadow: 10px;
+      }
+      #board {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        grid-gap: 10px;
+      }
+      .cell {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border: 2px solid #ddd;
+        font-size: 48px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        border-radius: 15px;
+      }
+      .cell:hover {
+        background-color: #f0f0f0;
+        cursor: url("./assets/mouse.png"), auto;
+      }
+      #status {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+      }
+      #resetBtn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        background-color: #4caf50;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+      #resetBtn:hover {
+        background-color: #45a049;
+      }
+      #toggleBtn {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        background-color: #2196f3;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+      #toggleBtn:hover {
+        background-color: #0b7dda;
+      }
+      .winn {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 100;
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <spline-viewer class="spline-viewer" url="./assets/scene.splinecode">
+      </spline-viewer>
+      <div class="mainCard" data-tilt>
+        <dotlottie-player
+          id="winning"
+          class="winn"
+          src="./assets/Animation - 1711821560779.json"
+          background="transparent"
+          speed="1"
+          style="width: 300px; height: 300px"
+          direction="1"
+          playMode="normal"
+          autoplay
+        ></dotlottie-player>
+        <h1 style="text-align: center; color: white">Tic Tac Toe</h1>
+        <div id="board">
+          <div class="cell" onclick="placeMarker(0, 0)"></div>
+          <div class="cell" onclick="placeMarker(0, 1)"></div>
+          <div class="cell" onclick="placeMarker(0, 2)"></div>
+          <div class="cell" onclick="placeMarker(1, 0)"></div>
+          <div class="cell" onclick="placeMarker(1, 1)"></div>
+          <div class="cell" onclick="placeMarker(1, 2)"></div>
+          <div class="cell" onclick="placeMarker(2, 0)"></div>
+          <div class="cell" onclick="placeMarker(2, 1)"></div>
+          <div class="cell" onclick="placeMarker(2, 2)"></div>
+        </div>
+        <p id="status" style="text-align: center"></p>
+        <button id="resetBtn" onclick="resetGame()">Reset Game</button>
+        <button id="toggleBtn" onclick="toggleMode()">Toggle AI</button>
+      </div>
+    </div>
+
+    <script
+      type="module"
+      src="https://unpkg.com/@splinetool/viewer@1.0.91/build/spline-viewer.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
+
+    <script>
+      $("[data-tilt]").tilt({
+        scale: 1.2,
+        maxTilt: 30,
+        perspective: 1000,
+        easing: "cubic-bezier(.03,.98,.52,.99)",
+        glare: false,
+        maxGlare: 0,
+        touch: true,
+      });
+      function showWinMessage() {
+        const winMessage = document.getElementById("winning");
+        winMessage.style.display = "block";
+        setTimeout(function () {
+          winMessage.style.display = "none";
+        }, 5000);
+      }
+      let currentPlayer = "X";
+      let board = [
+        ["", "", ""],
+        ["", "", ""],
+        ["", "", ""],
+      ];
+      let status = document.getElementById("status");
+      let aiEnabled = false;
+
+      function placeMarker(row, col) {
+        if (!board[row][col]) {
+          board[row][col] = currentPlayer;
+          let cell = document.getElementById("board").children[row * 3 + col];
+          cell.innerHTML =
+            currentPlayer === "X"
+              ? '<i style="color:red;" class="fas fa-times"></i>'
+              : '<i style="color:green;" class="far fa-circle"></i>';
+
+          if (checkWin()) {
+            status.innerText = `Player ${currentPlayer} wins!`;
+            disableBoard();
+          } else if (checkDraw()) {
+            status.innerText = "It's a draw!";
+            disableBoard();
+          } else {
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            status.innerText = `Player ${currentPlayer}'s turn`;
+            if (aiEnabled && currentPlayer === "O") {
+              setTimeout(aiMove, 500);
+            }
+          }
+        }
+      }
+
+      function aiMove() {
+        let emptyCells = [];
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            if (board[i][j] === "") {
+              emptyCells.push({ row: i, col: j });
+            }
+          }
+        }
+        if (emptyCells.length > 0) {
+          let randomIndex = Math.floor(Math.random() * emptyCells.length);
+          let { row, col } = emptyCells[randomIndex];
+          placeMarker(row, col);
+        }
+      }
+
+      function checkWin() {
+        for (let i = 0; i < 3; i++) {
+          if (
+            board[i][0] === board[i][1] &&
+            board[i][1] === board[i][2] &&
+            board[i][0] !== ""
+          ) {
+            return true;
+          }
+        }
+        for (let j = 0; j < 3; j++) {
+          if (
+            board[0][j] === board[1][j] &&
+            board[1][j] === board[2][j] &&
+            board[0][j] !== ""
+          ) {
+            return true;
+          }
+        }
+        if (
+          (board[0][0] === board[1][1] &&
+            board[1][1] === board[2][2] &&
+            board[0][0] !== "") ||
+          (board[0][2] === board[1][1] &&
+            board[1][1] === board[2][0] &&
+            board[0][2] !== "")
+        ) {
+          return true;
+        }
+        return false;
+      }
+
+      function checkDraw() {
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            if (board[i][j] === "") {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      function disableBoard() {
+        let cells = document.querySelectorAll(".cell");
+        cells.forEach((cell) => (cell.onclick = null));
+      }
+
+      function enableBoard() {
+        let cells = document.querySelectorAll(".cell");
+        cells.forEach((cell) => {
+          if (cell.innerText === "") {
+            cell.onclick = () => {
+              let row = Math.floor(cell.cellIndex / 3);
+              let col = cell.cellIndex % 3;
+              placeMarker(row, col);
+            };
+          }
+        });
+      }
+
+      function resetGame() {
+        board = [
+          ["", "", ""],
+          ["", "", ""],
+          ["", "", ""],
+        ];
+        currentPlayer = "X";
+        let cells = document.querySelectorAll(".cell");
+        cells.forEach((cell) => {
+          cell.innerHTML = "";
+        });
+        status.innerText = "Player X's turn";
+      }
+
+      function toggleMode() {
+        aiEnabled = !aiEnabled;
+        resetGame();
+        if (aiEnabled && currentPlayer === "O") {
+          setTimeout(aiMove, 500);
+        }
+      }
+    </script>
+  </body>
+</html>
